@@ -1,0 +1,171 @@
+/* static/style.css */
+/* General body and typography from previous good state */
+body {
+    font-family: 'Inter', sans-serif; /* Using Inter as a nice default sans-serif font */
+    padding-top: 20px; /* Add some padding at the top */
+    background-color: #f4f7f6; /* A very light grey or off-white for the page background */
+}
+
+.container {
+    max-width: 960px; /* Max width for content */
+    background-color: #ffffff; /* White background for the main content area */
+    padding: 20px;
+    border-radius: 8px; /* Softly rounded corners for the container */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* A slightly more pronounced shadow for depth */
+}
+
+/* Header styling */
+.header {
+    background-color: #007bff; /* Bootstrap primary blue */
+    color: white;
+    padding: 2.5rem 1.5rem; /* More padding for a spacious header */
+    margin-bottom: 2rem;
+    border-radius: .5rem; /* Slightly more rounded corners for header */
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.header h1 {
+    font-weight: 300; /* Lighter font for the main title */
+    font-size: 2.5rem;
+}
+.header .lead {
+    font-size: 1.1rem;
+    font-weight: 300;
+}
+
+
+/* Section titles */
+.section-title {
+    margin-top: 2.5rem; /* More space above section titles */
+    margin-bottom: 1.5rem; /* More space below section titles */
+    border-bottom: 2px solid #0056b3; /* A darker shade of blue for the border */
+    padding-bottom: 0.75rem;
+    color: #0056b3; /* Matching text color for section titles */
+    font-weight: 500; /* Medium font weight */
+    font-size: 1.75rem;
+}
+
+/* Card styling for courses and assignments */
+.course-card, .assignment-card {
+    border-radius: 0.3rem; /* Consistent rounded corners for cards */
+    margin-bottom: 1.5rem; /* More space between cards */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.07); /* Softer shadow for cards */
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border: 1px solid #e9ecef; /* Light border for cards */
+}
+
+.course-card:hover, .assignment-card:hover {
+    transform: translateY(-4px); /* Slightly more lift on hover */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.12); /* Enhanced shadow on hover */
+}
+
+.course-card .card-body, .assignment-card .list-group-item-action {
+    padding: 1.25rem; /* More padding inside cards */
+}
+
+.course-card .card-title {
+    font-weight: 500; /* Medium weight for course titles */
+    font-size: 1.2rem;
+    color: #0056b3; /* Dark blue for course titles */
+    margin-bottom: 0.5rem;
+}
+.course-card .card-text {
+    font-size: 0.95rem;
+    color: #5a6268; /* Softer color for secondary text */
+}
+
+
+.assignment-card .card-title { /* For assignment list items */
+    font-size: 1.1rem; /* Slightly larger font for assignment names */
+    font-weight: 500;
+    color: #333;
+}
+
+.assignment-card .due-date, .assignment-card .graded-date {
+    font-size: 0.9rem; /* Slightly larger date font */
+    color: #495057;
+}
+
+.assignment-card .points {
+    font-size: 0.85rem;
+    color: #6c757d; /* Standard muted color for points */
+}
+
+/* Specific styling for late assignments */
+.assignment-card.late {
+    border-left: 5px solid #dc3545; /* Red accent for late items */
+    background-color: #fbe LATEE; /* Very light red tint */
+}
+.assignment-card.late .card-title {
+    color: #dc3545; /* Red text for late assignment titles */
+}
+
+/* Specific styling for graded assignments */
+.assignment-card.graded {
+    border-left: 5px solid #28a745; /* Green accent for graded items */
+    background-color: #e6f7ee; /* Very light green tint */
+}
+.assignment-card.graded .text-success { /* Ensure score text is clearly green */
+    color: #157347 !important; /* Darker green for better readability */
+    font-weight: 500;
+}
+
+/* Highlight for recently changed/newly graded assignments */
+.assignment-card.grade-changed-highlight {
+    background-color: #fff3cd; /* A light yellow, similar to Bootstrap's warning background */
+    animation: highlight-fade 5s ease-out forwards; /* Longer animation, stays transparent */
+}
+
+@keyframes highlight-fade {
+    0% { background-color: #fffadc; } /* Start with highlight */
+    60% { background-color: #fffadc; } /* Hold highlight */
+    100% { background-color: transparent; } /* Fade to normal (or to .graded background if combined) */
+}
+
+
+/* "No data" message styling */
+.no-data {
+    color: #6c757d;
+    text-align: center;
+    padding: 1.5rem; /* More padding for no-data messages */
+    background-color: #e9ecef;
+    border-radius: .25rem;
+    font-style: italic;
+}
+.list-group-item.no-data { /* Specific for list group items */
+    border: none; /* Remove border if it's a list group item */
+}
+
+
+/* Form elements styling */
+.form-label {
+    font-weight: 500;
+    color: #343a40;
+}
+#courseSelect {
+    border-color: #ced4da;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.075);
+}
+#saveCourseSelection {
+    background-color: #28a745; /* Green for save button */
+    border-color: #28a745;
+    font-weight: 500;
+}
+#saveCourseSelection:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+/* PWA Install button styling */
+#installPwaButton {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* Status Area */
+#statusArea {
+    border-radius: .3rem; /* Match header/card rounding */
+    margin-bottom: 1.5rem; /* Space below status */
+    padding: 0.75rem 1.25rem;
+}

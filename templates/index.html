@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Tracker</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+
+    <meta name="theme-color" content="#007bff">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CanvasTrack">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192x192.png') }}">
+
+    <style>
+        /* Styles reverted to simpler version from your original upload */
+        body {
+            font-family: 'Inter', sans-serif;
+            padding-top: 20px;
+        }
+        .container {
+            max-width: 960px;
+        }
+        .header {
+            background-color: #f8f9fa; /* Light grey background */
+            padding: 2rem 1rem;
+            margin-bottom: 2rem;
+            border-radius: .3rem; /* Rounded corners */
+            text-align: center;
+        }
+        .section-title {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #dee2e6; /* Separator line */
+            padding-bottom: 0.5rem;
+        }
+        .course-card .card-title { /* For course cards in the grid */
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .course-card .card-text {
+            font-size: 0.9rem;
+        }
+        .assignment-card .card-title { /* For assignment list items */
+            font-size: 1.05rem;
+        }
+        .assignment-card .due-date { /* Retained for consistency if script.js uses it */
+            font-size: 0.85rem;
+            color: #495057;
+        }
+        .assignment-card .graded-date { /* Added if script.js uses it */
+            font-size: 0.85rem;
+            color: #495057;
+        }
+        .assignment-card .points {
+            font-size: 0.8rem;
+        }
+        .assignment-card, .course-card { /* General card/item styling */
+            border-radius: 0.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Subtle shadow */
+            /* Removed transition from the more styled version to match original simplicity */
+        }
+        /* Removed hover styles from the more styled version */
+
+        .no-data {
+            color: #6c757d;
+            text-align: center;
+            padding: 1rem;
+            /* background-color: #e9ecef; */ /* Original did not have this for .no-data base */
+            border-radius: .25rem;
+        }
+        .list-group-item.no-data { /* For no-data messages within list-groups */
+            border: none;
+            background-color: #e9ecef; /* Light grey for no-data messages inside lists */
+        }
+        /* Styling for the 'Apply Filter & Save' button and select dropdown */
+        #saveCourseSelection {
+            /* background-color: #28a745; */ /* Original did not style this button specifically here, relies on Bootstrap/external CSS */
+            /* border-color: #28a745; */
+        }
+        #courseSelect {
+            /* border-color: #ced4da; */ /* Original did not style this specifically here */
+        }
+        #statusArea {
+            border-radius: .25rem;
+        }
+        /* External style.css will handle .late, .graded, .grade-changed-highlight if defined there */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header"> <h1>Canvas Assignment Tracker</h1>
+            <p class="lead">Stay on top of your coursework!</p>
+        </header>
+
+        <div id="statusArea" class="alert alert-info" role="alert" style="display: none;">
+            Backend Status: <span id="backendStatus">Checking...</span>
+        </div>
+
+        <section id="course-selection">
+            <h2 class="section-title">My Courses</h2>
+            <div id="coursesList" class="row">
+                <div class="col-12"><p class="no-data">Courses will load here...</p></div>
+            </div>
+            <div class="mt-3 mb-3">
+                <label for="courseSelect" class="form-label">Filter Assignments by Course (Optional):</label>
+                <select multiple class="form-select" id="courseSelect" disabled>
+                    </select>
+                <button id="saveCourseSelection" class="btn btn-primary mt-2" disabled>Apply Filter & Save</button>
+                <div id="courseSelectionFeedback" class="mt-2"></div> </div>
+        </section>
+
+        <section id="upcoming-assignments">
+            <h2 class="section-title">Upcoming Assignments</h2>
+            <div id="upcomingAssignmentsList" class="list-group">
+                <p class="no-data list-group-item">Upcoming assignments will appear here...</p>
+            </div>
+        </section>
+
+        <section id="late-assignments">
+            <h2 class="section-title">Late Assignments</h2>
+            <div id="lateAssignmentsList" class="list-group">
+                <p class="no-data list-group-item">Late assignments will appear here...</p>
+            </div>
+        </section>
+
+        <section id="graded-assignments">
+            <h2 class="section-title">Recently Graded</h2>
+            <div id="gradedAssignmentsList" class="list-group">
+                <p class="no-data list-group-item">Graded assignments will appear here...</p>
+            </div>
+        </section>
+
+        <div class="mt-4 text-center">
+            <button id="installPwaButton" class="btn btn-success" style="display: none;">Install App</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const backendStatusEl = document.getElementById('backendStatus');
+            const statusAreaEl = document.getElementById('statusArea');
+            if (!backendStatusEl || !statusAreaEl) {
+                console.error("Status display elements not found in HTML.");
+                return;
+            }
+            statusAreaEl.style.display = 'block'; // Show the status area
+
+            fetch('/api/status')
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errData => {
+                           throw new Error(errData.message || `Network response was not ok (${response.status})`);
+                        }).catch(() => {
+                           throw new Error(`Network response was not ok (${response.status})`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        backendStatusEl.textContent = data.status || 'Error from backend.';
+                        statusAreaEl.classList.remove('alert-info', 'alert-success');
+                        statusAreaEl.classList.add('alert-danger');
+                        console.error("Backend status check indicated an error:", data.details || data.status);
+                    } else {
+                        backendStatusEl.textContent = data.status || 'OK';
+                        statusAreaEl.classList.remove('alert-info', 'alert-danger');
+                        statusAreaEl.classList.add('alert-success');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching backend status:', error);
+                    backendStatusEl.textContent = 'Connection Failed. Is the server running?';
+                    statusAreaEl.classList.remove('alert-info', 'alert-success');
+                    statusAreaEl.classList.add('alert-danger');
+                });
+        });
+    </script>
+</body>
+</html>
