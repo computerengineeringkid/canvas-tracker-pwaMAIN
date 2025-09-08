@@ -234,32 +234,81 @@ def get_courses_and_store():
     if isinstance(courses_data, dict) and courses_data.get("error"): return jsonify(courses_data), courses_data.get(
         "status_code", 500)
     active_courses_from_api = []
+    returned_course_ids = []
     if isinstance(courses_data, list):
         for course_data in courses_data:
-            if not isinstance(course_data, dict): continue
+            if not isinstance(course_data, dict):
+                continue
             end_at_str = course_data.get('end_at')
             if end_at_str:
                 end_at_date = parse_iso_datetime(end_at_str)
                 if end_at_date and end_at_date < datetime.now(timezone.utc):
-                    logging.info(f"Skipping course '{course_data.get('name')}' as it ended on {end_at_str}.")
-                    with db.session.no_autoflush:
+                    logging.info(
+                        f"Skipping course '{course_data.get('name')}' as it ended on {end_at_str}.")
+                    with db.session.no_autoflush():
                         db_course_to_deactivate = db.session.get(Course, course_data['id'])
-                        if db_course_to_deactivate: db_course_to_deactivate.is_active = False
+                        if db_course_to_deactivate:
+                            db_course_to_deactivate.is_active = False
                     continue
-            with db.session.no_autoflush:
+            with db.session.no_autoflush():
                 db_course = db.session.get(Course, course_data['id'])
-            if db_course is None: db_course = Course(id=course_data['id']); db.session.add(db_course)
-            db_course.name = course_data.get('name', 'Unnamed Course');
-            db_course.course_code = course_data.get('course_code');
+            if db_course is None:
+                db_course = Course(id=course_data['id'])
+                db.session.add(db_course)
+            db_course.name = course_data.get('name', 'Unnamed Course')
+            db_course.course_code = course_data.get('course_code')
             db_course.is_active = True
+            returned_course_ids.append(db_course.id)
             active_courses_from_api.append(
-                {'id': db_course.id, 'name': db_course.name, 'course_code': db_course.course_code})
+                {
+                    'id': db_course.id,
+                    'name': db_course.name,
+                    'course_code': db_course.course_code,
+                }
+            )
         try:
             db.session.commit()
         except Exception as e:
-            db.session.rollback(); logging.error(f"Database error storing courses: {e}"); return jsonify(
-                {"error": "DatabaseOperationError", "message": "Could not save course data."}), 500
-    active_courses_from_api.sort(key=lambda c: c['name'].lower());
+            db.session.rollback()
+            logging.error(f"Database error storing courses: {e}")
+            return (
+                jsonify(
+                    {
+                        "error": "DatabaseOperationError",
+                        "message": "Could not save course data.",
+                    }
+                ),
+                500,
+            )
+
+        # Deactivate courses not returned by Canvas
+        try:
+            if returned_course_ids:
+                courses_to_deactivate = Course.query.filter(
+                    Course.is_active.is_(True),
+                    Course.id.notin_(returned_course_ids),
+                ).all()
+            else:
+                courses_to_deactivate = Course.query.filter_by(is_active=True).all()
+            for course in courses_to_deactivate:
+                course.is_active = False
+                course.assignments.clear()
+            if courses_to_deactivate:
+                db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            logging.error(f"Database error deactivating courses: {e}")
+            return (
+                jsonify(
+                    {
+                        "error": "DatabaseOperationError",
+                        "message": "Could not deactivate missing courses.",
+                    }
+                ),
+                500,
+            )
+
+    active_courses_from_api.sort(key=lambda c: c['name'].lower())
     return jsonify(active_courses_from_api)
 
 
