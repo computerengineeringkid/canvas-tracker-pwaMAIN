@@ -229,8 +229,16 @@ def test_discord_route():
 
 @app.route('/api/courses', methods=['GET'])
 def get_courses_and_store():
-    courses_data = canvas_api_request('/courses',
-                                      params={'enrollment_state': 'active', 'per_page': 50, 'include[]': 'term'})
+    courses_data = canvas_api_request(
+        '/courses',
+        params={
+            'enrollment_state': 'active',
+            'per_page': 50,
+            'include[]': 'term',
+            'enrollment_type': 'student',
+            'state[]': 'available'
+        }
+    )
     if isinstance(courses_data, dict) and courses_data.get("error"): return jsonify(courses_data), courses_data.get(
         "status_code", 500)
     active_courses_from_api = []
