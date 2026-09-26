@@ -1,0 +1,16 @@
+# Secrets
+.env
+.env.*
+
+# Local data
+*.db
+
+# Environments and dependencies
+venv/
+.venv/
+__pycache__/
+node_modules/
+
+# Editor / OS
+.idea/
+.DS_Store

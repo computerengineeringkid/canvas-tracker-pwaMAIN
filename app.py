@@ -15,10 +15,10 @@ from apscheduler.triggers.interval import IntervalTrigger
 app = Flask(__name__)
 
 # Configuration
-CANVAS_API_TOKEN = os.environ.get('CANVAS_API_TOKEN', '8020~v9LZTJTeRtBZnwLZvxmkWNhMK7hRt2E3AZkcLCwUVAe463mhZnhAHT3we8GPMhxe')  # Replace with your actual token
+CANVAS_API_TOKEN = os.environ.get('CANVAS_API_TOKEN', 'YOUR_ACTUAL_CANVAS_API_TOKEN_HERE')  # Set in the environment, never in code
 CANVAS_BASE_URL = os.environ.get('CANVAS_BASE_URL','https://synchronic.uat.edu/')  # Replace with your Canvas URL
 # --- Discord Webhook Configuration ---
-DISCORD_WEBHOOK_URL = os.environ.get('DISCORD_WEBHOOK_URL', 'https://discord.com/api/webhooks/1375369736753512538/XqFWhaXdbwtIZ8oQG1aWUmyFHkBra4QYAhBmGuGoJEqLULAXYqsT9jTQ90vYFUC04zG6')
+DISCORD_WEBHOOK_URL = os.environ.get('DISCORD_WEBHOOK_URL', 'YOUR_DISCORD_WEBHOOK_URL_HERE')  # Set in the environment, never in code
 
 
 db_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'canvas_tracker.db')
@@ -97,7 +97,7 @@ class Assignment(db.Model):
 
 def canvas_api_request(endpoint, method='GET', params=None):
     if CANVAS_API_TOKEN == 'YOUR_ACTUAL_CANVAS_API_TOKEN_HERE' or CANVAS_BASE_URL == 'YOUR_CANVAS_INSTANCE_URL_HERE' or not CANVAS_API_TOKEN or not CANVAS_BASE_URL:
-        error_msg = "CRITICAL ERROR: Canvas API Token or Base URL is not configured in app.py."
+        error_msg = "CRITICAL ERROR: Canvas API Token or Base URL is not configured. Set the CANVAS_API_TOKEN and CANVAS_BASE_URL environment variables."
         logging.error(error_msg)
         return {"error": "ConfigurationError", "message": error_msg, "status_code": 503}
     headers = {"Authorization": f"Bearer {CANVAS_API_TOKEN}"}
@@ -188,11 +188,11 @@ def manifest(): return send_from_directory(os.path.join(app.root_path, 'static')
 def api_status():
     if CANVAS_API_TOKEN == 'YOUR_ACTUAL_CANVAS_API_TOKEN_HERE' or CANVAS_BASE_URL == 'YOUR_CANVAS_INSTANCE_URL_HERE':
         return jsonify({"status": "Flask backend running, BUT Canvas API is NOT configured!", "error": True,
-                        "details": "Update CANVAS_API_TOKEN and CANVAS_BASE_URL in app.py."}), 503
+                        "details": "Set the CANVAS_API_TOKEN and CANVAS_BASE_URL environment variables."}), 503
     if DISCORD_WEBHOOK_URL == 'YOUR_DISCORD_WEBHOOK_URL_HERE' or not DISCORD_WEBHOOK_URL:
         return jsonify(
             {"status": "Flask backend running, Canvas API configured, BUT Discord Webhook is NOT configured!",
-             "error": True, "details": "Update DISCORD_WEBHOOK_URL in app.py."}), 503
+             "error": True, "details": "Set the DISCORD_WEBHOOK_URL environment variable."}), 503
     user_profile = canvas_api_request('/users/self/profile')
     if isinstance(user_profile, dict) and user_profile.get("error"):
         status_code = user_profile.get("status_code", 502)
